@@ -78,7 +78,7 @@ function getBadgeColor(status) {
 
 export default function Home({ statuses }) {
   return (
-    <div className="min-h-screen w-full bg-gray-50 flex flex-col items-center py-10 px-4">
+    <div className="w-max-[1200px] bg-gray-50 flex flex-col items-center py-10 px-4 font-sans">
       {/* 페이지 타이틀 */}
       <h1 className="text-xl font-bold text-gray-800 mb-8">1일 1알골 </h1>
 
