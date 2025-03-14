@@ -19,7 +19,14 @@ const normalUsers = {
 const specialUser = {
   smooo2: "박성문",
 };
-
+function getLocalDate() {
+  const date = new Date();
+  const year = date.getFullYear();
+  // 월은 0부터 시작하므로 +1 해줍니다.
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
 export async function getServerSideProps() {
   const statuses = {};
   // 두 그룹을 합쳐서 전체 사용자로 관리
@@ -27,7 +34,9 @@ export async function getServerSideProps() {
   const usernames = Object.keys(allUsers);
 
   // 오늘 날짜(UTC 기준, "YYYY-MM-DD")
-  const today = new Date().toISOString().split("T")[0];
+  const today = getLocalDate();
+  console.log(today);
+
   // 어제 날짜 계산 (밀리초 단위 86,400,000 = 1일)
   const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
 
