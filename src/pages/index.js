@@ -27,6 +27,14 @@ function getLocalDate() {
   const day = date.getDate().toString().padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
+function getYesterDay() {
+  const date = new Date();
+  const year = date.getFullYear();
+  // 월은 0부터 시작하므로 +1 해줍니다.
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
+  return `${year}-${month}-${day - 1}`;
+}
 export async function getServerSideProps() {
   const statuses = {};
   // 두 그룹을 합쳐서 전체 사용자로 관리
@@ -35,10 +43,9 @@ export async function getServerSideProps() {
 
   // 오늘 날짜(UTC 기준, "YYYY-MM-DD")
   const today = getLocalDate();
-  console.log(today);
 
   // 어제 날짜 계산 (밀리초 단위 86,400,000 = 1일)
-  const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
+  const yesterday = getYesterDay();
 
   await Promise.all(
     usernames.map(async (username) => {
@@ -50,7 +57,6 @@ export async function getServerSideProps() {
         const json = await res.json();
         const grass = json.grass || [];
 
-        // value가 1이면 "해결" 상태로 처리
         const solvedToday = grass.some((item) => item.date === today);
         const solvedYesterday = grass.some((item) => item.date === yesterday);
 
@@ -89,7 +95,7 @@ export default function Home({ statuses }) {
   return (
     <div className="w-max-[1200px] bg-gray-50 flex flex-col items-center py-10 px-4 font-sans">
       {/* 페이지 타이틀 */}
-      <h1 className="text-xl font-bold text-gray-800 mb-8">1일 1알골 </h1>
+      <h1 className="text-xl font-bold text-gray-800 mb-8">1일 1알골</h1>
 
       {/* 특별 사용자 섹션 */}
       <div className="mb-6 w-full max-w-4xl flex flex-col items-center gap-4">
