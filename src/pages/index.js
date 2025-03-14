@@ -1,113 +1,78 @@
-import Image from "next/image";
-import { Geist, Geist_Mono } from "next/font/google";
+// pages/index.js
+import React from "react";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+const userInfo = {
+  tjwndnjs7: "서주원",
+  kunzatt2501: "김용명",
+  codena_1025: "강수진",
+  hanahyun1: "한재서",
+  bsh7931: "배성훈",
+  jump6746: "김종명",
+  rkdwldms42: "강지은",
+  sktndid1203: "박수양",
+  t0mat0: "김유정",
+  zyu22: "지유림",
+};
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+export async function getServerSideProps() {
+  const statuses = {};
+  const usernames = Object.keys(userInfo);
 
-export default function Home() {
+  // 오늘 날짜(UTC 기준, "YYYY-MM-DD")를 구함.
+  const today = new Date().toISOString().split("T")[0];
+
+  await Promise.all(
+    usernames.map(async (username) => {
+      try {
+        // API 호출: 각 유저의 solved.ac grass 데이터 가져오기
+        const res = await fetch(
+          `https://solved.ac/api/v3/user/grass?handle=${username}&topic=default`
+        );
+        const json = await res.json();
+        const grass = json.grass || [];
+
+        // 오늘 날짜에 해당하는 객체가 있고, value가 1이면 "해결함"
+        const solved = grass.some(
+          (item) => item.date === today && item.value === 1
+        );
+        statuses[username] = solved ? "해결함" : "해결하지 않음";
+      } catch (error) {
+        console.error(`Error fetching ${username}:`, error);
+        statuses[username] = "에러 발생";
+      }
+    })
+  );
+
+  return { props: { statuses } };
+}
+
+function Home({ statuses }) {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/pages/index.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className="min-h-screen bg-gray-100 p-4 flex flex-wrap gap-4 justify-center">
+      {Object.entries(userInfo).map(([username, displayName]) => {
+        const status = statuses[username] || "로딩중...";
+        let bgColor;
+        if (status === "해결함") {
+          bgColor = "bg-green-500";
+        } else if (status === "해결하지 않음") {
+          bgColor = "bg-red-500";
+        } else {
+          bgColor = "bg-gray-300";
+        }
+        return (
+          <div
+            key={username}
+            className="flex flex-col items-center p-4 border border-gray-200 rounded-md shadow-sm w-64"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+            <div className="text-lg font-semibold mb-2">{displayName}</div>
+            <div className={`${bgColor} text-white px-3 py-1 rounded`}>
+              {status}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
+
+export default Home;
