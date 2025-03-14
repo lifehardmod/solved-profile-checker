@@ -27,6 +27,24 @@ function getLocalDate() {
   const day = date.getDate().toString().padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
+function getKSTDate() {
+  const date = new Date();
+  // UTC 기준으로 생성된 date에 9시간(9 * 60 * 60 * 1000 밀리초)를 더합니다.
+  date.setTime(date.getTime() + 9 * 60 * 60 * 1000);
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+function getYesterKSTDate() {
+  const date = new Date();
+  // UTC 기준으로 생성된 date에 9시간(9 * 60 * 60 * 1000 밀리초)를 더합니다.
+  date.setTime(date.getTime() + 9 * 60 * 60 * 1000);
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
 function getYesterDay() {
   const date = new Date();
   const year = date.getFullYear();
@@ -41,11 +59,11 @@ export async function getServerSideProps() {
   const allUsers = { ...specialUser, ...normalUsers };
   const usernames = Object.keys(allUsers);
 
-  // 오늘 날짜(UTC 기준, "YYYY-MM-DD")
-  const today = getLocalDate();
+  // 오늘 날짜(UTC 기준, "YYYY-MM-DD") kst
+  const today = getKSTDate();
 
   // 어제 날짜 계산 (밀리초 단위 86,400,000 = 1일)
-  const yesterday = getYesterDay();
+  const yesterday = getYesterKSTDate();
 
   await Promise.all(
     usernames.map(async (username) => {
