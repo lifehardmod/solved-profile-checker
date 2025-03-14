@@ -111,49 +111,9 @@ function getBadgeColor(status) {
 
 export default function Home({ statuses }) {
   return (
-    <div className="w-max-[1200px] bg-gray-50 flex flex-col items-center py-10 px-4 font-sans">
+    <div className=" bg-gray-100 flex flex-col items-center py-10 px-4 max-w-[1200px] mx-auto h-fit pb-20 ">
       {/* 페이지 타이틀 */}
       <h1 className="text-xl font-bold text-gray-800 mb-8">1일 1알골</h1>
-
-      {/* 특별 사용자 섹션 */}
-      <div className="mb-6 w-full max-w-4xl flex flex-col items-center gap-4">
-        {Object.entries(specialUser).map(([username, displayName]) => {
-          const userStatus = statuses[username] || {
-            today: "로딩중...",
-            yesterday: "로딩중...",
-          };
-
-          return (
-            <div
-              key={username}
-              className="w-full  bg-white rounded-lg shadow-md px-4 py-3 flex flex-col gap-2 items-center justify-center"
-            >
-              <div className="">
-                <p className="text-xl font-semibold text-indigo-600">
-                  {displayName}
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <div
-                  className={` rounded-full text-sm font-medium ${getBadgeColor(
-                    userStatus.yesterday
-                  )}`}
-                >
-                  어제 : {userStatus.yesterday}
-                </div>
-                <div
-                  className={` rounded-full text-sm font-medium ${getBadgeColor(
-                    userStatus.today
-                  )}`}
-                >
-                  오늘: {userStatus.today}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
 
       {/* 일반 사용자 섹션 */}
       <div className="flex-wrap flex justify-center items-start gap-5 ">
@@ -164,7 +124,11 @@ export default function Home({ statuses }) {
           };
 
           return (
-            <div className="bg-white rounded-lg shadow-md px-12 py-4 flex-col gap-2 flex items-center w-[240]">
+            <div
+              className={`bg-white rounded-lg shadow-md px-12 py-4 flex-col gap-2 flex items-center w-[240] ${
+                userStatus.today === "해결" && "opacity-50"
+              }`}
+            >
               {/* 사용자 이름 */}
               <div className="flex flex-col items-center">
                 <p className="text-lg font-semibold text-gray-800">
