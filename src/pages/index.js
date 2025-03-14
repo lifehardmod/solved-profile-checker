@@ -28,6 +28,8 @@ export async function getServerSideProps() {
 
   // 오늘 날짜(UTC 기준, "YYYY-MM-DD")
   const today = new Date().toISOString().split("T")[0];
+  // 어제 날짜 계산 (밀리초 단위 86,400,000 = 1일)
+  const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
 
   await Promise.all(
     usernames.map(async (username) => {
@@ -39,14 +41,20 @@ export async function getServerSideProps() {
         const json = await res.json();
         const grass = json.grass || [];
 
-        // 오늘 날짜의 데이터가 있고, value가 1이면 "해결함"
-        const solved = grass.some(
-          (item) => item.date === today && item.value === 1
-        );
-        statuses[username] = solved ? "해결함" : "해결하지 않음";
+        // value가 1이면 "해결" 상태로 처리
+        const solvedToday = grass.some((item) => item.date === today);
+        const solvedYesterday = grass.some((item) => item.date === yesterday);
+
+        statuses[username] = {
+          today: solvedToday ? "해결" : "미해결",
+          yesterday: solvedYesterday ? "해결" : "미해결",
+        };
       } catch (error) {
         console.error(`Error fetching ${username}:`, error);
-        statuses[username] = "에러 발생";
+        statuses[username] = {
+          today: "에러",
+          yesterday: "에러",
+        };
       }
     })
   );
@@ -54,59 +62,101 @@ export async function getServerSideProps() {
   return { props: { statuses } };
 }
 
-function Home({ statuses }) {
-  return (
-    <div className="min-h-screen bg-gray-100 p-4 flex flex-col gap-8 items-center">
-      {/* 특별 사용자 카드 */}
-      {Object.entries(specialUser).map(([username, displayName]) => {
-        const status = statuses[username] || "로딩중...";
-        let bgColor;
-        if (status === "해결함") {
-          bgColor = "bg-green-500";
-        } else if (status === "해결하지 않음") {
-          bgColor = "bg-red-500";
-        } else {
-          bgColor = "bg-gray-300";
-        }
-        return (
-          <div
-            key={username}
-            className="relative flex flex-col items-center p-4 border border-gray-200 rounded-md shadow-sm w-64 overflow-hidden"
-          >
-            {/* 반짝거리는 배경 효과 (예시: 노란색 펄스 효과) */}
-            <div className="absolute inset-0 bg-yellow-300 opacity-50 rounded-md animate-pulse" />
-            <div className="relative z-10 text-lg font-semibold mb-2">
-              {displayName}
-            </div>
-            <div
-              className={`relative z-10 ${bgColor} text-white px-3 py-1 rounded`}
-            >
-              {status}
-            </div>
-          </div>
-        );
-      })}
+// 상태에 따른 배지 색상
+function getBadgeColor(status) {
+  switch (status) {
+    case "해결":
+      return " text-green-700";
+    case "미해결":
+      return " text-red-700";
+    case "에러":
+      return "bg-gray-200 text-gray-600";
+    default:
+      return "bg-gray-100 text-gray-600";
+  }
+}
 
-      {/* 일반 사용자 카드 */}
-      <div className="flex flex-wrap gap-4 justify-center">
-        {Object.entries(normalUsers).map(([username, displayName]) => {
-          const status = statuses[username] || "로딩중...";
-          let bgColor;
-          if (status === "해결함") {
-            bgColor = "bg-green-500";
-          } else if (status === "해결하지 않음") {
-            bgColor = "bg-red-500";
-          } else {
-            bgColor = "bg-gray-300";
-          }
+export default function Home({ statuses }) {
+  return (
+    <div className="min-h-screen w-full bg-gray-50 flex flex-col items-center py-10 px-4">
+      {/* 페이지 타이틀 */}
+      <h1 className="text-xl font-bold text-gray-800 mb-8">1일 1알골 </h1>
+
+      {/* 특별 사용자 섹션 */}
+      <div className="mb-6 w-full max-w-4xl flex flex-col items-center gap-4">
+        {Object.entries(specialUser).map(([username, displayName]) => {
+          const userStatus = statuses[username] || {
+            today: "로딩중...",
+            yesterday: "로딩중...",
+          };
+
           return (
             <div
               key={username}
-              className="flex flex-col items-center p-4 border border-gray-200 rounded-md shadow-sm w-64"
+              className="w-full  bg-white rounded-lg shadow-md px-4 py-3 flex flex-col gap-2 items-center justify-center"
             >
-              <div className="text-lg font-semibold mb-2">{displayName}</div>
-              <div className={`${bgColor} text-white px-3 py-1 rounded`}>
-                {status}
+              <div className="">
+                <p className="text-xl font-semibold text-indigo-600">
+                  {displayName}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <div
+                  className={` rounded-full text-sm font-medium ${getBadgeColor(
+                    userStatus.yesterday
+                  )}`}
+                >
+                  어제 : {userStatus.yesterday}
+                </div>
+                <div
+                  className={` rounded-full text-sm font-medium ${getBadgeColor(
+                    userStatus.today
+                  )}`}
+                >
+                  오늘: {userStatus.today}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* 일반 사용자 섹션 */}
+      <div className="flex-wrap flex justify-center items-start gap-5 ">
+        {Object.entries(normalUsers).map(([username, displayName]) => {
+          const userStatus = statuses[username] || {
+            today: "로딩중...",
+            yesterday: "로딩중...",
+          };
+
+          return (
+            <div className="bg-white rounded-lg shadow-md px-12 py-4 flex-col gap-2 flex items-center w-[240]">
+              {/* 사용자 이름 */}
+              <div className="flex flex-col items-center">
+                <p className="text-lg font-semibold text-gray-800">
+                  {displayName}
+                </p>
+                <p className="text-xs text-gray-400">{`@${username}`}</p>
+              </div>
+
+              {/* 상태 표시 */}
+              <div className="flex gap-3 items-center justify-center">
+                <div
+                  className={`rounded-lg text-sm font-medium w-fit whitespace-nowrap ${getBadgeColor(
+                    userStatus.yesterday
+                  )}`}
+                >
+                  어제: {userStatus.yesterday}
+                </div>
+                /
+                <div
+                  className={`rounded-lg text-sm font-medium w-fit whitespace-nowrap ${getBadgeColor(
+                    userStatus.today
+                  )}`}
+                >
+                  오늘: {userStatus.today}
+                </div>
               </div>
             </div>
           );
@@ -115,5 +165,3 @@ function Home({ statuses }) {
     </div>
   );
 }
-
-export default Home;
