@@ -13,6 +13,8 @@ const normalUsers = {
   sktndid1203: "박수양",
   t0mat0: "김유정",
   zyu22: "지유림",
+  smooo2:"박성문",
+  laurayoon:"윤이영",
 };
 
 // 특별 사용자: smooo2만 따로 관리
