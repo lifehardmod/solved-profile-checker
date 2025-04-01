@@ -15,6 +15,7 @@ const normalUsers = {
   zyu22: "지유림",
   smooo2:"박성문",
   laurayoon:"윤이영",
+  qq3477:"문종하",
 };
 
 // 특별 사용자: smooo2만 따로 관리
